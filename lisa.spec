@@ -1,10 +1,8 @@
-# TODO
-# check description in subpackage
 Summary:	The LAN Information Server
 Summary(pl):	Serwer informacji o LANie
 Name:		lisa
 Version:	0.2.2
-Release:	0.2
+Release:	1
 License:	GPL
 Group:		Networking/Daemons	
 Source0:	http://lisa-home.sourceforge.net/src/lisa-%{version}.tar.bz2
