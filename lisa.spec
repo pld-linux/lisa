@@ -37,9 +37,9 @@ bazuj±c jedynie na protokole TCP/IP a nie na SMB.
 %build
 rm -f missing
 %{__libtoolize}
-aclocal
+%{__aclocal}
 %{__autoconf}
-autoheader
+%{__autoheader}
 %{__automake}
 %configure
 %{__make}
