@@ -2,13 +2,15 @@ Summary:	The LAN Information Server
 Summary(pl):	Serwer informacji o LANie
 Name:		lisa
 Version:	0.2.1
-Release:	1
+Release:	1.3
 License:	GPL
 Group:		Daemons
 Source0:	http://lisa-home.sourceforge.net/src/lisa-0.2.1.tar.bz2
 Source1:	%{name}.init
 Source2:	%{name}.sysconfig
 Patch0:		%{name}-acam.patch
+Patch1:		%{name}-net_auto_conf.patch
+Patch2:		%{name}-default_config.patch
 URL:		http://lisa-home.sourceforge.net/
 BuildRequires:	autoconf
 BuildRequires:	automake
@@ -29,6 +31,8 @@ bazuj±c jedynie na protokole TCP/IP a nie na SMB.
 %prep
 %setup -q
 %patch0 -p1
+%patch1 -p1
+%patch2 -p1
 
 %build
 rm -f missing
