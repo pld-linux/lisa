@@ -1,0 +1,247 @@
+diff -urN lisa-0.2.1.orig/lisa/Makefile.am lisa-0.2.1.devel/lisa/Makefile.am
+--- lisa-0.2.1.orig/lisa/Makefile.am	Tue Mar 20 18:37:36 2001
++++ lisa-0.2.1.devel/lisa/Makefile.am	Sat Sep 21 12:54:07 2002
+@@ -19,7 +19,8 @@
+ mystring.cpp \
+ simplelist.cpp \
+ client.cpp \
+-configfile.cpp
++configfile.cpp \
++netautoconf.cpp
+ 
+ reslisa_SOURCES = \
+ addressvalidator.cpp \
+@@ -31,7 +32,8 @@
+ mystring.cpp \
+ simplelist.cpp \
+ client.cpp \
+-configfile.cpp
++configfile.cpp \
++netautoconf.cpp
+ 
+ lisa_LDADD = $(LIBSOCKET)
+ 
+diff -urN lisa-0.2.1.orig/lisa/addressvalidator.cpp lisa-0.2.1.devel/lisa/addressvalidator.cpp
+--- lisa-0.2.1.orig/lisa/addressvalidator.cpp	Tue Mar 20 18:37:36 2001
++++ lisa-0.2.1.devel/lisa/addressvalidator.cpp	Sat Sep 21 14:29:50 2002
+@@ -22,6 +22,8 @@
+ #include <arpa/inet.h>
+ #include <sys/socket.h>
+ 
++#include "netautoconf.h"
++
+ AddressValidator::AddressValidator(const MyString& addressSpecs)
+ //this is 127.0.0.0
+ :localhostNet(htonl(0x7f000000))
+@@ -49,6 +51,17 @@
+ {
+    MyString tmp=stripWhiteSpace(config.getEntry("AllowedAddresses",""));
+    tmp=tmp+";";
++   if(tmp == "auto;") {
++      NetAutoConf *nac = new NetAutoConf();
++      for(int i = 0; i < nac->getInterfacesCount(); i++) {
++         tmp = nac->getInterfaceNet(0);
++         tmp += "/";
++         tmp += nac->getInterfaceMask(0);
++         tmp += ";";
++         //cerr << "--- AllowedAddresses: " << tmp << endl;
++      }
++      delete nac;
++   }
+    setValidAddresses(tmp);
+    getDebug()<<"AddressValidator::configure(): "<<tmp<<endl;
+ };
+diff -urN lisa-0.2.1.orig/lisa/netautoconf.cpp lisa-0.2.1.devel/lisa/netautoconf.cpp
+--- lisa-0.2.1.orig/lisa/netautoconf.cpp	Thu Jan  1 01:00:00 1970
++++ lisa-0.2.1.devel/lisa/netautoconf.cpp	Sat Sep 21 14:29:50 2002
+@@ -0,0 +1,95 @@
++#include <stdio.h>
++#include <unistd.h>
++#include <sys/types.h>
++#include <sys/socket.h>
++#ifdef USE_SOLARIS
++/* net/if.h is incompatible with STL on Solaris 2.6 and 2.8, redefine
++ * map in the header file because we don't need it. -- Simon Josefsson */
++#define map junkmap
++#endif
++#include <net/if.h>
++#ifdef USE_SOLARIS
++#undef map
++#endif
++#include <sys/ioctl.h>
++#include <netinet/in.h>
++#include <arpa/inet.h>
++
++#include "netautoconf.h"
++#include <iostream.h>
++
++void NetAutoConf::scanInterfaces(void) {
++	count = 0;
++	
++	// Shouldn't it be close()'d at the end?
++	int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
++	char buf[8 * 1024];
++	struct ifconf ifc;
++	int result;
++	char *ptr;
++	
++	ifc.ifc_len = sizeof(buf);
++	ifc.ifc_req = (struct ifreq *) buf;
++
++	result = ioctl(sockfd, SIOCGIFCONF, &ifc);
++
++	for (ptr = buf; ptr < buf + ifc.ifc_len;) {
++		struct ifreq *ifr = (struct ifreq *) ptr;
++		int len = sizeof(struct sockaddr);
++		int flags;
++		struct sockaddr_in *sinptr;
++		struct ifreq ifcopy;
++#ifdef  HAVE_SOCKADDR_SA_LEN
++		if (ifr->ifr_addr.sa_len > len)
++			len = ifr->ifr_addr.sa_len;	/* length > 16 */
++#endif
++		ptr += sizeof(ifr->ifr_name) + len;	/* for next one in buffer */
++
++		switch (ifr->ifr_addr.sa_family) {
++			case AF_INET:
++				struct in_addr tmp_net;
++				sinptr = (struct sockaddr_in *) &ifr->ifr_addr;
++				flags = 0;
++				memcpy(&tmp_net, &sinptr->sin_addr, sizeof(tmp_net));
++
++				ifcopy = *ifr;
++				result = ioctl(sockfd, SIOCGIFFLAGS, &ifcopy);
++				flags = ifcopy.ifr_flags;
++				if (((flags & IFF_UP) == IFF_UP)
++				    && ((flags & IFF_BROADCAST) == IFF_BROADCAST)
++				    && ((flags & IFF_LOOPBACK) == 0)) {
++					//yes, we are interested in this one :-)
++					ifcopy = *ifr;
++					result =
++					    ioctl(sockfd, SIOCGIFNETMASK, &ifcopy);
++					sinptr =
++					    (struct sockaddr_in *) &ifcopy.
++					    ifr_addr;
++					memcpy(&(nets[count]), &tmp_net, sizeof(nets[count]));
++					memcpy(&(masks[count]), &sinptr->sin_addr, sizeof(masks[count]));
++					count++;
++				};
++				break;
++		}
++	}
++}
++
++NetAutoConf::NetAutoConf(void) {
++	count = 0;
++	scanInterfaces();
++}
++
++NetAutoConf::~NetAutoConf(void) {
++}
++
++int NetAutoConf::getInterfacesCount(void) {
++	return count;
++}
++
++const char *NetAutoConf::getInterfaceNet(int index) {
++	return inet_ntoa(nets[index]);
++}
++
++const char *NetAutoConf::getInterfaceMask(int index) {
++	return inet_ntoa(masks[index]);
++}
+diff -urN lisa-0.2.1.orig/lisa/netautoconf.h lisa-0.2.1.devel/lisa/netautoconf.h
+--- lisa-0.2.1.orig/lisa/netautoconf.h	Thu Jan  1 01:00:00 1970
++++ lisa-0.2.1.devel/lisa/netautoconf.h	Sat Sep 21 14:29:50 2002
+@@ -0,0 +1,24 @@
++#ifndef __MK_NET_AUTO_CONF
++#define __MK_NET_AUTO_CONF
++
++#include <netinet/in.h>
++
++#define NET_AUTO_CONF_MAX_INTERFACES	256
++
++class NetAutoConf {
++private:
++	int count;
++	struct in_addr nets[NET_AUTO_CONF_MAX_INTERFACES];
++	struct in_addr masks[NET_AUTO_CONF_MAX_INTERFACES];
++
++	void scanInterfaces();
++public:
++	NetAutoConf(void);
++	~NetAutoConf(void);
++
++	int getInterfacesCount(void);
++	const char *getInterfaceNet(int index);
++	const char *getInterfaceMask(int index);
++};
++
++#endif // __MK_NET_AUTO_CONF
+diff -urN lisa-0.2.1.orig/lisa/netmanager.cpp lisa-0.2.1.devel/lisa/netmanager.cpp
+--- lisa-0.2.1.orig/lisa/netmanager.cpp	Wed Apr  3 22:54:24 2002
++++ lisa-0.2.1.devel/lisa/netmanager.cpp	Sat Sep 21 14:29:50 2002
+@@ -41,6 +41,8 @@
+ #define getDebug() getDebug()<<procId
+ //#define getDebug() cerr<<procId
+ 
++#include "netautoconf.h"
++
+ NetManager::NetManager(int& rawSocketFD, int portToUse, MyString configFile, int configStyle, int strictMode)
+ :NetScanner(rawSocketFD,strictMode)
+ //,validator()
+@@ -102,6 +104,17 @@
+ {
+    m_refreshTime=config.getEntry("UpdatePeriod",300);
+    MyString tmp=stripWhiteSpace(config.getEntry("BroadcastNetwork","0.0.0.0/255.255.255.255;"));
++   if(tmp == "auto") {
++      NetAutoConf *nac = new NetAutoConf();
++      if(nac->getInterfacesCount() > 0) {
++	 tmp = nac->getInterfaceNet(0);
++	 tmp += "/";
++	 tmp += nac->getInterfaceMask(0);
++	 tmp += ";";
++	 //cerr << "--- BroadcastNetwork: " << tmp << endl;
++      }
++      delete nac;
++   }
+    tmp=tmp+",";
+    getDebug()<<"NetManager::readConfig: "<<tmp<<endl;
+    MyString netAddressStr=tmp.left(tmp.find('/'));
+diff -urN lisa-0.2.1.orig/lisa/netscanner.cpp lisa-0.2.1.devel/lisa/netscanner.cpp
+--- lisa-0.2.1.orig/lisa/netscanner.cpp	Wed Oct  3 23:45:43 2001
++++ lisa-0.2.1.devel/lisa/netscanner.cpp	Sat Sep 21 14:29:50 2002
+@@ -35,6 +35,7 @@
+ #include <netinet/in_systm.h>
+ #include <netinet/ip.h>
+ #include <netinet/ip_icmp.h>
++#include "netautoconf.h"
+ 
+ #define getDebug() getDebug()<<procId
+ 
+@@ -112,10 +113,25 @@
+ void NetScanner::configure(Config& config)
+ {
+    //ranges are not allowed in strict mode
++   //cerr << "NetScanner::configure, strict = " << m_strictMode << endl;
+    if (!m_strictMode)
+    {
+       ipRangeStr=stripWhiteSpace(config.getEntry("PingAddresses",""));
+       addMissingSemicolon(ipRangeStr);
++      if(ipRangeStr == "auto;") {
++
++	 //delete ipRangeStr;
++	 ipRangeStr = "";
++	 
++	 NetAutoConf *nac = new NetAutoConf();
++	 for(int i = 0; i < nac->getInterfacesCount(); i++) {
++	    ipRangeStr += nac->getInterfaceNet(i);
++	    ipRangeStr += "/";
++	    ipRangeStr += nac->getInterfaceMask(i);
++	    ipRangeStr += ";";
++	 }
++	 delete nac;
++      }
+    };
+    MyString pingNames=stripWhiteSpace(config.getEntry("PingNames",""));
+    addMissingSemicolon(pingNames);
