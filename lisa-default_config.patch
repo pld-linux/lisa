@@ -1,0 +1,23 @@
+diff -urN lisa-0.2.1.orig2/lisa/lisarc lisa-0.2.1/lisa/lisarc
+--- lisa-0.2.1.orig2/lisa/lisarc	Fri Oct 27 13:54:41 2000
++++ lisa-0.2.1/lisa/lisarc	Sat Sep 21 14:59:57 2002
+@@ -1,11 +1,14 @@
+-PingAddresses = 192.168.100.0/255.255.255.0
+-PingNames = someHost;someOtherHost
+-AllowedAddresses = 192.168.100.0/255.255.255.0
+-BroadcastNetwork = 192.168.100.0/255.255.255.0
++#PingAddresses = 192.168.100.0/255.255.255.0
++PingAddresses = auto
++#PingNames = someHost;someOtherHost
++#AllowedAddresses = 192.168.100.0/255.255.255.0
++AllowedAddresses = auto
++#BroadcastNetwork = 192.168.100.0/255.255.255.0
++BroadcastNetwork = auto
+ FirstWait = 30                          #30 hundredth seconds
+ SecondWait = -1                         #only one try
+ #SecondWait = 60                         #try twice, and the second time wait 0.6 seconds
+ UpdatePeriod = 300                      #update after 300 secs
+ DeliverUnnamedHosts = 0                 #also publish hosts without name
+ MaxPingsAtOnce = 256                    #send up to 256 ICMP echo requests at once
+-
++SearchUsingNmblookup = 1
