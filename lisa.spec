@@ -2,7 +2,7 @@ Summary:	The LAN Information Server
 Summary(pl):	Serwer informacji o LANie
 Name:		lisa
 Version:	0.2.1
-Release:	1.3
+Release:	2
 License:	GPL
 Group:		Daemons
 Source0:	http://lisa-home.sourceforge.net/src/lisa-0.2.1.tar.bz2
@@ -65,7 +65,7 @@ else
 	echo "Run \"/etc/rc.d/init.d/lisa start\" to start Lisa daemon."
 fi
 
-%postun
+%preun
 if [ "$1" = "0" ]; then
 	if [ -r /var/lock/subsys/lisa ]; then
 		/etc/rc.d/init.d/lisa stop >&2
