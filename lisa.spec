@@ -39,7 +39,7 @@ bazuj±c jedynie na protokole TCP/IP a nie na SMB.
 
 %package lslan
 Summary:	Perl Script to print a LISa Host list on the command line
-Summary(pl):	Skrypt w perlu szukaj±cy otoczenia sieciowego z wiersza poleceñ
+Summary(pl):	Skrypt w Perlu szukaj±cy otoczenia sieciowego z wiersza poleceñ
 Group:		Applications/Networking
 Requires:	lisa
 
@@ -49,7 +49,7 @@ It it also configurable to test some standard server functions on the
 hosts like SMB, FTP, HTTP ,VNC ,MySQL
 
 %description lslan -l pl
-Lslan to skrypt napisany w perlu szukaj±cy w sieci hostów 
+Lslan to skrypt napisany w Perlu szukaj±cy w sieci hostów 
 udostêpniaj±cych otoczenie sieciowe. Obok zasobów SMB mo¿liwe jest
 równie¿ wyszukiwanie kilku standardowych funkcji serwerów sieciowych
 jak: FTP, HTTP ,VNC ,MySQL.
