@@ -4,9 +4,9 @@
 #
 # chkconfig:	345 50 50
 #
-# description:	LISa is a small daemon which is intended to run on end user
-#		systems. It provides something like a "network neighbourhood",
-#		but only relying on the TCP/IP protocol stack, no smb or
+# description:	LISa is a small daemon which is intended to run on end user \
+#		systems. It provides something like a "network neighbourhood", \
+#		but only relying on the TCP/IP protocol stack, no smb or \
 #		whatever.
 #
 # $Id$
