@@ -10,6 +10,9 @@ Source1:	%{name}.init
 Source2:	%{name}.sysconfig
 Patch0:		%{name}-acam.patch
 URL:		http://lisa-home.sourceforge.net/
+BuildRequires:	autoconf
+BuildRequires:	automake
+BuildRequires:	libtool
 PreReq:		/sbin/chkconfig
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -28,7 +31,8 @@ bazuj±c jedynie na protokole TCP/IP a nie na SMB.
 %patch0 -p1
 
 %build
-libtoolize --force --copy
+rm -f missing
+%{__libtoolize}
 aclocal
 %{__autoconf}
 autoheader
