@@ -2,7 +2,7 @@ Summary:	The LAN Information Server
 Summary(pl):	Serwer informacji o LANie
 Name:		lisa
 Version:	0.2.1
-Release:	2
+Release:	3
 License:	GPL
 Group:		Daemons
 Source0:	http://lisa-home.sourceforge.net/src/lisa-0.2.1.tar.bz2
@@ -15,6 +15,7 @@ URL:		http://lisa-home.sourceforge.net/
 BuildRequires:	autoconf
 BuildRequires:	automake
 BuildRequires:	libtool
+Obsoletes:	kdenetwork-lisa
 PreReq:		/sbin/chkconfig
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -46,11 +47,11 @@ rm -f missing
 
 %install
 rm -rf $RPM_BUILD_ROOT
-install -d $RPM_BUILD_ROOT%{_sysconfdir}/{rc.d/init.d,sysconfig}
+install -d $RPM_BUILD_ROOT{/etc/{rc.d/init.d,sysconfig},%{_sysconfdir}}
 
 install lisa/lisarc $RPM_BUILD_ROOT%{_sysconfdir}
-install %{SOURCE1} $RPM_BUILD_ROOT%{_sysconfdir}/rc.d/init.d/lisa
-install %{SOURCE2} $RPM_BUILD_ROOT%{_sysconfdir}/sysconfig/lisa
+install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/lisa
+install %{SOURCE2} $RPM_BUILD_ROOT/etc/sysconfig/lisa
 
 %{__make} install DESTDIR=$RPM_BUILD_ROOT
 
@@ -78,5 +79,5 @@ fi
 %doc README NEWS AUTHORS ChangeLog
 %attr(755,root,root) %{_bindir}/*
 %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/lisarc
-%config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/sysconfig/lisa
-%attr(754,root,root) %{_sysconfdir}/rc.d/init.d/lisa
+%config(noreplace) %verify(not size mtime md5) /etc/sysconfig/lisa
+%attr(754,root,root) /etc/rc.d/init.d/lisa
