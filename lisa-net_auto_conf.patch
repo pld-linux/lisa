@@ -1,6 +1,36 @@
-diff -urN lisa-0.2.1.orig/lisa/Makefile.am lisa-0.2.1.devel/lisa/Makefile.am
---- lisa-0.2.1.orig/lisa/Makefile.am	Tue Mar 20 18:37:36 2001
-+++ lisa-0.2.1.devel/lisa/Makefile.am	Sat Sep 21 12:54:07 2002
+diff -urN lisa-0.2.2.orig/lisa/addressvalidator.cpp lisa-0.2.2/lisa/addressvalidator.cpp
+--- lisa-0.2.2.orig/lisa/addressvalidator.cpp	2002-11-06 21:32:06.000000000 +0000
++++ lisa-0.2.2/lisa/addressvalidator.cpp	2004-05-03 15:34:45.080408456 +0000
+@@ -24,6 +24,8 @@
+ 
+ using namespace std;
+ 
++#include "netautoconf.h"
++
+ AddressValidator::AddressValidator(const MyString& addressSpecs)
+ //this is 127.0.0.0
+ :localhostNet(htonl(0x7f000000))
+@@ -51,6 +53,17 @@
+ {
+    MyString tmp=stripWhiteSpace(config.getEntry("AllowedAddresses",""));
+    tmp=tmp+";";
++   if(tmp == "auto;") {
++      NetAutoConf *nac = new NetAutoConf();
++      for(int i = 0; i < nac->getInterfacesCount(); i++) {
++         tmp = nac->getInterfaceNet(0);
++         tmp += "/";
++         tmp += nac->getInterfaceMask(0);
++         tmp += ";";
++         //cerr << "--- AllowedAddresses: " << tmp << endl;
++      }
++      delete nac;
++   }
+    setValidAddresses(tmp);
+    getDebug()<<"AddressValidator::configure(): "<<tmp<<std::endl;
+ };
+diff -urN lisa-0.2.2.orig/lisa/Makefile.am lisa-0.2.2/lisa/Makefile.am
+--- lisa-0.2.2.orig/lisa/Makefile.am	2002-11-06 21:34:22.000000000 +0000
++++ lisa-0.2.2/lisa/Makefile.am	2004-05-03 15:34:45.079408608 +0000
 @@ -19,7 +19,8 @@
  mystring.cpp \
  simplelist.cpp \
@@ -20,40 +50,10 @@ diff -urN lisa-0.2.1.orig/lisa/Makefile.am lisa-0.2.1.devel/lisa/Makefile.am
 +netautoconf.cpp
  
  lisa_LDADD = $(LIBSOCKET)
- 
-diff -urN lisa-0.2.1.orig/lisa/addressvalidator.cpp lisa-0.2.1.devel/lisa/addressvalidator.cpp
---- lisa-0.2.1.orig/lisa/addressvalidator.cpp	Tue Mar 20 18:37:36 2001
-+++ lisa-0.2.1.devel/lisa/addressvalidator.cpp	Sat Sep 21 14:29:50 2002
-@@ -22,6 +22,8 @@
- #include <arpa/inet.h>
- #include <sys/socket.h>
- 
-+#include "netautoconf.h"
-+
- AddressValidator::AddressValidator(const MyString& addressSpecs)
- //this is 127.0.0.0
- :localhostNet(htonl(0x7f000000))
-@@ -49,6 +51,17 @@
- {
-    MyString tmp=stripWhiteSpace(config.getEntry("AllowedAddresses",""));
-    tmp=tmp+";";
-+   if(tmp == "auto;") {
-+      NetAutoConf *nac = new NetAutoConf();
-+      for(int i = 0; i < nac->getInterfacesCount(); i++) {
-+         tmp = nac->getInterfaceNet(0);
-+         tmp += "/";
-+         tmp += nac->getInterfaceMask(0);
-+         tmp += ";";
-+         //cerr << "--- AllowedAddresses: " << tmp << endl;
-+      }
-+      delete nac;
-+   }
-    setValidAddresses(tmp);
-    getDebug()<<"AddressValidator::configure(): "<<tmp<<endl;
- };
-diff -urN lisa-0.2.1.orig/lisa/netautoconf.cpp lisa-0.2.1.devel/lisa/netautoconf.cpp
---- lisa-0.2.1.orig/lisa/netautoconf.cpp	Thu Jan  1 01:00:00 1970
-+++ lisa-0.2.1.devel/lisa/netautoconf.cpp	Sat Sep 21 14:29:50 2002
+ lisa_LDFLAGS = $(KDE_EXTRA_RPATH)
+diff -urN lisa-0.2.2.orig/lisa/netautoconf.cpp lisa-0.2.2/lisa/netautoconf.cpp
+--- lisa-0.2.2.orig/lisa/netautoconf.cpp	1970-01-01 00:00:00.000000000 +0000
++++ lisa-0.2.2/lisa/netautoconf.cpp	2004-05-03 15:34:45.083408000 +0000
 @@ -0,0 +1,95 @@
 +#include <stdio.h>
 +#include <unistd.h>
@@ -150,9 +150,9 @@ diff -urN lisa-0.2.1.orig/lisa/netautoconf.cpp lisa-0.2.1.devel/lisa/netautoconf
 +const char *NetAutoConf::getInterfaceMask(int index) {
 +	return inet_ntoa(masks[index]);
 +}
-diff -urN lisa-0.2.1.orig/lisa/netautoconf.h lisa-0.2.1.devel/lisa/netautoconf.h
---- lisa-0.2.1.orig/lisa/netautoconf.h	Thu Jan  1 01:00:00 1970
-+++ lisa-0.2.1.devel/lisa/netautoconf.h	Sat Sep 21 14:29:50 2002
+diff -urN lisa-0.2.2.orig/lisa/netautoconf.h lisa-0.2.2/lisa/netautoconf.h
+--- lisa-0.2.2.orig/lisa/netautoconf.h	1970-01-01 00:00:00.000000000 +0000
++++ lisa-0.2.2/lisa/netautoconf.h	2004-05-03 15:34:45.083408000 +0000
 @@ -0,0 +1,24 @@
 +#ifndef __MK_NET_AUTO_CONF
 +#define __MK_NET_AUTO_CONF
@@ -178,19 +178,19 @@ diff -urN lisa-0.2.1.orig/lisa/netautoconf.h lisa-0.2.1.devel/lisa/netautoconf.h
 +};
 +
 +#endif // __MK_NET_AUTO_CONF
-diff -urN lisa-0.2.1.orig/lisa/netmanager.cpp lisa-0.2.1.devel/lisa/netmanager.cpp
---- lisa-0.2.1.orig/lisa/netmanager.cpp	Wed Apr  3 22:54:24 2002
-+++ lisa-0.2.1.devel/lisa/netmanager.cpp	Sat Sep 21 14:29:50 2002
-@@ -41,6 +41,8 @@
- #define getDebug() getDebug()<<procId
- //#define getDebug() cerr<<procId
+diff -urN lisa-0.2.2.orig/lisa/netmanager.cpp lisa-0.2.2/lisa/netmanager.cpp
+--- lisa-0.2.2.orig/lisa/netmanager.cpp	2002-11-08 19:54:19.000000000 +0000
++++ lisa-0.2.2/lisa/netmanager.cpp	2004-05-03 15:34:45.085407696 +0000
+@@ -50,6 +50,8 @@
+    errno = saved_errno;
+ }
  
 +#include "netautoconf.h"
 +
  NetManager::NetManager(int& rawSocketFD, int portToUse, MyString configFile, int configStyle, int strictMode)
  :NetScanner(rawSocketFD,strictMode)
  //,validator()
-@@ -102,6 +104,17 @@
+@@ -125,6 +127,17 @@
  {
     m_refreshTime=config.getEntry("UpdatePeriod",300);
     MyString tmp=stripWhiteSpace(config.getEntry("BroadcastNetwork","0.0.0.0/255.255.255.255;"));
@@ -206,20 +206,20 @@ diff -urN lisa-0.2.1.orig/lisa/netmanager.cpp lisa-0.2.1.devel/lisa/netmanager.c
 +      delete nac;
 +   }
     tmp=tmp+",";
-    getDebug()<<"NetManager::readConfig: "<<tmp<<endl;
+    mgetDebug()<<"NetManager::readConfig: "<<tmp<<std::endl;
     MyString netAddressStr=tmp.left(tmp.find('/'));
-diff -urN lisa-0.2.1.orig/lisa/netscanner.cpp lisa-0.2.1.devel/lisa/netscanner.cpp
---- lisa-0.2.1.orig/lisa/netscanner.cpp	Wed Oct  3 23:45:43 2001
-+++ lisa-0.2.1.devel/lisa/netscanner.cpp	Sat Sep 21 14:29:50 2002
+diff -urN lisa-0.2.2.orig/lisa/netscanner.cpp lisa-0.2.2/lisa/netscanner.cpp
+--- lisa-0.2.2.orig/lisa/netscanner.cpp	2002-11-06 21:32:10.000000000 +0000
++++ lisa-0.2.2/lisa/netscanner.cpp	2004-05-03 15:34:45.091406784 +0000
 @@ -35,6 +35,7 @@
  #include <netinet/in_systm.h>
  #include <netinet/ip.h>
  #include <netinet/ip_icmp.h>
 +#include "netautoconf.h"
  
- #define getDebug() getDebug()<<procId
- 
-@@ -112,10 +113,25 @@
+ #ifndef INADDR_NONE
+ #define INADDR_NONE -1
+@@ -116,10 +117,25 @@
  void NetScanner::configure(Config& config)
  {
     //ranges are not allowed in strict mode
