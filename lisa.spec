@@ -11,7 +11,6 @@ Source1:	%{name}.init
 Source2:	%{name}.sysconfig
 Source3:	http://lisa-home.sourceforge.net/src/lslan-latest.tar.gz
 # Source3-md5:	536b2382f92b6777e4e8fab022d4def8
-Patch0:		%{name}-acam.patch
 Patch1:		%{name}-net_auto_conf.patch
 Patch2:		%{name}-default_config.patch
 URL:		http://lisa-home.sourceforge.net/
@@ -54,7 +53,6 @@ jak: FTP, HTTP ,VNC ,MySQL.
 
 %prep
 %setup -q -a 3
-#%%patch0 -p1
 %patch1 -p1
 %patch2 -p1
 
