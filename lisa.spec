@@ -1,12 +1,12 @@
 Summary:	The LAN Information Server
 Summary(pl):	Serwer informacji o LANie
 Name:		lisa
-Version:	0.2.1
-Release:	3
+Version:	0.2.2
+Release:	0.1
 License:	GPL
-Group:		Daemons
-Source0:	http://lisa-home.sourceforge.net/src/lisa-0.2.1.tar.bz2
-# Source0-md5:	f5bd0bec01e4d6ee8cf8228bdcaca77e
+Group:		Networking/Daemons	
+Source0:	http://lisa-home.sourceforge.net/src/lisa-%{version}.tar.bz2
+# Source0-md5:	cba116a4880f77205e0813d93bf14310
 Source1:	%{name}.init
 Source2:	%{name}.sysconfig
 Patch0:		%{name}-acam.patch
@@ -15,8 +15,11 @@ Patch2:		%{name}-default_config.patch
 URL:		http://lisa-home.sourceforge.net/
 BuildRequires:	autoconf
 BuildRequires:	automake
+BuildRequires:	libstdc++-devel
 BuildRequires:	libtool
+Provides:       lisa
 Obsoletes:	kdenetwork-lisa
+Obsoletes:	kdenetwork-lanbrowser
 Requires(post,preun):/sbin/chkconfig
 BuildRoot:	%{tmpdir}/%{name}-%{version}-root-%(id -u -n)
 
@@ -32,7 +35,7 @@ bazuj±c jedynie na protokole TCP/IP a nie na SMB.
 
 %prep
 %setup -q
-%patch0 -p1
+#%%patch0 -p1
 %patch1 -p1
 %patch2 -p1
 
@@ -50,7 +53,7 @@ rm -f missing
 rm -rf $RPM_BUILD_ROOT
 install -d $RPM_BUILD_ROOT{/etc/{rc.d/init.d,sysconfig},%{_sysconfdir}}
 
-install lisa/lisarc $RPM_BUILD_ROOT%{_sysconfdir}
+install lisarc $RPM_BUILD_ROOT%{_sysconfdir}
 install %{SOURCE1} $RPM_BUILD_ROOT/etc/rc.d/init.d/lisa
 install %{SOURCE2} $RPM_BUILD_ROOT/etc/sysconfig/lisa
 
@@ -77,7 +80,7 @@ fi
 
 %files
 %defattr(644,root,root,755)
-%doc README NEWS AUTHORS ChangeLog
+%doc README AUTHORS
 %attr(755,root,root) %{_bindir}/*
 %config(noreplace) %verify(not size mtime md5) %{_sysconfdir}/lisarc
 %config(noreplace) %verify(not size mtime md5) /etc/sysconfig/lisa
