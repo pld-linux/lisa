@@ -6,6 +6,7 @@ Release:	3
 License:	GPL
 Group:		Daemons
 Source0:	http://lisa-home.sourceforge.net/src/lisa-0.2.1.tar.bz2
+# Source0-md5:	f5bd0bec01e4d6ee8cf8228bdcaca77e
 Source1:	%{name}.init
 Source2:	%{name}.sysconfig
 Patch0:		%{name}-acam.patch
