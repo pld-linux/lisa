@@ -1,5 +1,5 @@
 Summary:	The LAN Information Server
-Summary(pl):	Serwer informacji o LANie
+Summary(pl.UTF-8):   Serwer informacji o LANie
 Name:		lisa
 Version:	0.2.2
 Release:	1
@@ -29,14 +29,14 @@ LISa is a small daemon which is intended to run on end user systems.
 It provides something like a "network neighbourhood", but only relying
 on the TCP/IP protocol stack, no smb or whatever.
 
-%description -l pl
-LISA jest ma³ym daemonem przeznaczonym do dzia³ania na komputerach
-u¿ytkowników. Dostarcza czego¶ w rodzaju ,,Otoczenia Sieciowego'' ale
-bazuj±c jedynie na protokole TCP/IP a nie na SMB.
+%description -l pl.UTF-8
+LISA jest maÅ‚ym daemonem przeznaczonym do dziaÅ‚ania na komputerach
+uÅ¼ytkownikÃ³w. Dostarcza czegoÅ› w rodzaju ,,Otoczenia Sieciowego'' ale
+bazujÄ…c jedynie na protokole TCP/IP a nie na SMB.
 
 %package lslan
 Summary:	Perl Script to print a LISa Host list on the command line
-Summary(pl):	Skrypt w Perlu szukaj±cy otoczenia sieciowego z wiersza poleceñ
+Summary(pl.UTF-8):   Skrypt w Perlu szukajÄ…cy otoczenia sieciowego z wiersza poleceÅ„
 Group:		Applications/Networking
 Requires:	lisa
 
@@ -45,10 +45,10 @@ Lslan is a Perl Script to print a LISa Host list on the command line.
 It it also configurable to test some standard server functions on the
 hosts like SMB, FTP, HTTP ,VNC ,MySQL
 
-%description lslan -l pl
-Lslan to skrypt napisany w Perlu szukaj±cy w sieci hostów
-udostêpniaj±cych otoczenie sieciowe. Obok zasobów SMB mo¿liwe jest
-równie¿ wyszukiwanie kilku standardowych funkcji serwerów sieciowych
+%description lslan -l pl.UTF-8
+Lslan to skrypt napisany w Perlu szukajÄ…cy w sieci hostÃ³w
+udostÄ™pniajÄ…cych otoczenie sieciowe. Obok zasobÃ³w SMB moÅ¼liwe jest
+rÃ³wnieÅ¼ wyszukiwanie kilku standardowych funkcji serwerÃ³w sieciowych
 jak: FTP, HTTP ,VNC ,MySQL.
 
 %prep
