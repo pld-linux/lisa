@@ -1,5 +1,5 @@
 Summary:	The LAN Information Server
-Summary(pl.UTF-8):   Serwer informacji o LANie
+Summary(pl.UTF-8):	Serwer informacji o LANie
 Name:		lisa
 Version:	0.2.2
 Release:	1
@@ -36,7 +36,7 @@ bazując jedynie na protokole TCP/IP a nie na SMB.
 
 %package lslan
 Summary:	Perl Script to print a LISa Host list on the command line
-Summary(pl.UTF-8):   Skrypt w Perlu szukający otoczenia sieciowego z wiersza poleceń
+Summary(pl.UTF-8):	Skrypt w Perlu szukający otoczenia sieciowego z wiersza poleceń
 Group:		Applications/Networking
 Requires:	lisa
 
